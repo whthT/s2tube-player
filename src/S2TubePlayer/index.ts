@@ -1,7 +1,6 @@
 import styles from '../styles/main.scss'
 import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
-import cx from 'classnames'
 import mainControls from '../parts/controls/main.pug'
 import append from '../lib/elementAppend'
 import strToDom from '../lib/strToDom'
@@ -27,7 +26,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
     this.el = this.getVideoElement(args.el)
     this.container = this.createElement('div', {
-      class: cx(styles.wrapper, styles.paused)
+      class: `${styles.wrapper} ${styles.paused}`
     })
 
     this.initializeStructure()

@@ -17,9 +17,12 @@ if (!dev) {
 }
 
 const options = {
-  entry: path.join(__dirname, 'src/index.js'),
+  entry: path.join(
+    __dirname,
+    `src/${dev ? 'index.js' : 'S2TubePlayer/index.ts'}`
+  ),
   mode: dev ? 'development' : 'production',
-  devtool: 'inline-source-map',
+  devtool: dev ? 'inline-source-map' : 'none',
   output: {
     library: 'S2TubePlayer',
     libraryTarget: 'umd',
