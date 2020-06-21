@@ -25,6 +25,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private bufferedProgressBar: HTMLDivElement
   private tooltipEl: HTMLSpanElement
   private durationInterval: any = null
+  private hideControlsTimeout: any = null
   private previouslyVolume: number = 0.6
   private isFullscreen: Boolean = false
   private activeSourceSize: number = null
@@ -107,9 +108,11 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
     this.clickableBar.onmousemove = this.clickableBarMouseMove.bind(this)
 
-    this.controlsElement
-      .querySelector(`.${styles.bigPlayPauseButton}`)
-      .addEventListener('click', this.togglePlayPause.bind(this))
+    this.controlsElement.addEventListener('click', (e: any) => {
+      if (this.controlsElement.isSameNode(e.target)) {
+        this.togglePlayPause()
+      }
+    })
     this.controlsElement
       .querySelector(`.${styles.playPauseButton}`)
       .addEventListener('click', this.togglePlayPause.bind(this))
@@ -133,6 +136,11 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.controlsElement
       .querySelector(`.${styles.configsMenuTrigger}`)
       .addEventListener('click', this.toggleConfigsMenu.bind(this))
+
+    this.controlsElement.addEventListener(
+      'mousemove',
+      this.onVideoMouseMove.bind(this)
+    )
 
     this.el.onloadeddata = () => {
       this.finishLoad()
@@ -427,5 +435,17 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       .classList[this.isConfigsMenuOpened ? 'add' : 'remove'](
         styles.configsMenuOpened
       )
+  }
+
+  onVideoMouseMove() {
+    if (this.hideControlsTimeout) {
+      clearTimeout(this.hideControlsTimeout)
+    }
+    if (this.container.classList.contains(styles.hideControls)) {
+      this.container.classList.remove(styles.hideControls)
+    }
+    this.hideControlsTimeout = setTimeout(() => {
+      this.container.classList.add(styles.hideControls)
+    }, 500)
   }
 }

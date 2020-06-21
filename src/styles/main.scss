@@ -14,4 +14,5 @@
   @include WrapperStatusVolumeHigh();
   @include WrapperStatusVolumeLow();
   @include WrapperStatusFullscreen();
+  @include WrapperStatusHideControls();
 }

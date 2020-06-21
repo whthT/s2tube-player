@@ -1,6 +1,5 @@
 @mixin WrapperStatusPlaying {
   &.playing {
-    .bigPlayPauseButton,
     .playPauseButton {
       svg:first-child {
         display: none;

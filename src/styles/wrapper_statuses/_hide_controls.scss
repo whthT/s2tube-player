@@ -1,0 +1,9 @@
+@mixin WrapperStatusHideControls {
+  &.hideControls {
+    cursor: none;
+    .controls {
+      cursor: none;
+      opacity: 0;
+    }
+  }
+}
