@@ -24,6 +24,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private bufferedProgressBar: HTMLDivElement
   private tooltipEl: HTMLSpanElement
   private durationInterval: any = null
+  private previouslyVolume: number
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
 
@@ -86,23 +87,22 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.el.onpause = this.onPause.bind(this)
     this.el.onplaying = this.onPlaying.bind(this)
     this.el.onended = this.onEnded.bind(this)
+    this.el.onvolumechange = this.onVolumeChange.bind(this)
 
     this.clickableBar.onmousemove = this.clickableBarMouseMove.bind(this)
 
-    const playPauseFnc = () => {
-      if (this.el.paused) {
-        this.el.play()
-      } else {
-        this.el.pause()
-      }
-    }
-
     this.controlsElement
       .querySelector(`.${styles.bigPlayPauseButton}`)
-      .addEventListener('click', playPauseFnc)
+      .addEventListener('click', this.togglePlayPause.bind(this))
     this.controlsElement
       .querySelector(`.${styles.playPauseButton}`)
-      .addEventListener('click', playPauseFnc)
+      .addEventListener('click', this.togglePlayPause.bind(this))
+    this.controlsElement
+      .querySelector(`.${styles.volume}`)
+      .addEventListener('click', this.toggleMute.bind(this))
+    this.controlsElement
+      .querySelector(`.${styles.volumeRangeClickableBar}`)
+      .addEventListener('click', this.handleVolumeRangeClickOrDrag.bind(this))
 
     this.clickableBar.addEventListener(
       'click',
@@ -160,6 +160,27 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.progressBar.style.width = '100%'
     // @ts-ignore
     this.currentTimeEl.innerText = this.totalTimeEl.innerText
+  }
+
+  onVolumeChange() {
+    const percentage = (this.el.volume * 100) / 1
+    this.container.querySelector(
+      `.${styles.volumeRangeActiveBar}`
+    ).style.width = `${percentage}%`
+    if (this.el.volume === 0) {
+      this.container.classList.add(styles.muted)
+      this.container.classList.remove(styles.volumeLow)
+      this.container.classList.remove(styles.volumeHigh)
+    } else {
+      this.container.classList.remove(styles.muted)
+      if (percentage >= 40) {
+        this.container.classList.remove(styles.volumeLow)
+        this.container.classList.add(styles.volumeHigh)
+      } else {
+        this.container.classList.remove(styles.volumeHigh)
+        this.container.classList.add(styles.volumeLow)
+      }
+    }
   }
 
   initializeStructure() {
@@ -233,5 +254,27 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     const time = secondFormat(this.getTimeByPercentage(percentage))
     this.tooltipEl.style.left = `${percentage - 3}%`
     this.tooltipEl.innerText = time
+  }
+
+  toggleMute() {
+    if (this.el.volume > 0) {
+      this.previouslyVolume = this.el.volume
+      this.el.volume = 0
+    } else {
+      this.el.volume = this.previouslyVolume
+    }
+  }
+
+  togglePlayPause() {
+    if (this.el.paused) {
+      this.el.play()
+    } else {
+      this.el.pause()
+    }
+  }
+  handleVolumeRangeClickOrDrag(event: any) {
+    const percentage = this.calculateMouseEventPercentage(event)
+    const volume = (percentage * 1) / 100
+    this.el.volume = volume
   }
 }

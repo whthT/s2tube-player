@@ -11,9 +11,24 @@
   width: 0;
   transition: width 0.4s;
 }
-
+@mixin bottomNavigationDivider {
+  margin: 0 0.5em;
+}
 @mixin ArialFont {
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@mixin controlIcon {
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  background: none;
+  width: 32px;
+  height: 32px;
+  svg {
+    fill: $white;
+  }
 }
 
 .wrapper {
@@ -82,36 +97,56 @@
           justify-content: flex-start;
           align-items: center;
           .playPauseButton {
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            border: none;
-            background: none;
-            width: 32px;
-            height: 32px;
-            svg {
-              fill: $white;
-            }
+            @include controlIcon;
           }
 
           .timeRanges {
             @include ArialFont;
+            margin-left: 1em;
             .currentTime {
               color: $white;
               &::after {
                 content: '/';
-                margin: 0 0.5em;
+                @include bottomNavigationDivider;
               }
             }
             .totalTime {
               color: #aaa;
             }
           }
+          .volume {
+            @include bottomNavigationDivider;
+            @include controlIcon;
+            svg:not(:nth-child(1)) {
+              display: none;
+            }
+          }
+          .volumeRange {
+            display: block;
+            width: 100%;
+            background: $progressBarEmptyBgColor;
+            height: 8px;
+            width: 90px;
+            position: relative;
+            .volumeRangeClickableBar {
+              width: 100%;
+              height: 8px;
+              background: transparent;
+              cursor: pointer;
+              position: absolute;
+            }
+            .volumeRangeActiveBar {
+              display: block;
+              height: 8px;
+              @include animatedProgressbar;
+              background: $progressBarActiveBgColor;
+            }
+          }
         }
 
         .progressBar {
           height: 10px;
-          background-color: rgba(255, 255, 255, 0.2);
+          background-color: $progressBarEmptyBgColor;
           display: flex;
           align-items: center;
           margin: 0 auto;
@@ -159,13 +194,13 @@
           }
           .bufferedProgressBar {
             height: 10px;
-            background-color: rgba(255, 255, 255, 0.4);
+            background-color: $progressBarBufferBgColor;
             position: absolute;
             @include animatedProgressbar;
           }
           &__inner {
             height: 10px;
-            background-color: #f2f2f2;
+            background-color: $progressBarActiveBgColor;
             @include animatedProgressbar;
           }
         }
@@ -197,5 +232,48 @@
 
   &.waiting {
     outline: none;
+  }
+  &.muted
+    .controls
+    .bottomNavigation
+    .bottomNavigation__inner
+    .bottomNavigationFlexer {
+    .volume {
+      svg:not(:nth-child(3)) {
+        display: none;
+      }
+      svg:nth-child(3) {
+        display: block;
+      }
+    }
+  }
+
+  &.volumeHigh
+    .controls
+    .bottomNavigation
+    .bottomNavigation__inner
+    .bottomNavigationFlexer {
+    .volume {
+      svg:nth-child(1) {
+        display: block;
+      }
+      svg:nth-child(2) {
+        display: none;
+      }
+    }
+  }
+  &.volumeLow
+    .controls
+    .bottomNavigation
+    .bottomNavigation__inner
+    .bottomNavigationFlexer {
+    .volume {
+      svg:nth-child(1) {
+        display: none;
+      }
+      svg:nth-child(2) {
+        display: block;
+      }
+    }
   }
 }

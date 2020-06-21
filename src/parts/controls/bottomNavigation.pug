@@ -1,5 +1,8 @@
 - var playSVG = require('../../assets/svgs/solid/play-circle.svg')
 - var pauseSVG = require('../../assets/svgs/solid/pause.svg')
+- var volumeDownSVG = require('../../assets/svgs/solid/volume-down.svg')
+- var volumeUpSVG = require('../../assets/svgs/solid/volume-up.svg')
+- var volumeMuteSVG = require('../../assets/svgs/solid/volume-mute.svg')
 div(class=styles.bottomNavigation)
     div(class=styles.bottomNavigation__inner)
         div(class=styles.progressBar)
@@ -14,3 +17,11 @@ div(class=styles.bottomNavigation)
             div(class=styles.timeRanges)
                 span(class=styles.currentTime) 00:00
                 span(class=styles.totalTime) 00:00
+            button(class=styles.volume)
+                | !{volumeUpSVG}
+                | !{volumeDownSVG}
+                | !{volumeMuteSVG}
+            div(class=styles.volumeRange)
+                div(class=styles.volumeRangeClickableBar)
+                span(class=styles.volumeRangeActiveBar)
+                
