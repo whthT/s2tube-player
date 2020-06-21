@@ -1,4 +1,4 @@
-import styles from '../styles/main.scss'
+import styles, { wrapper } from '../styles/main.scss'
 import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
@@ -22,6 +22,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private currentTimeEl = HTMLSpanElement
   private totalTimeEl = HTMLSpanElement
   private bufferedProgressBar: HTMLDivElement
+  private tooltipEl: HTMLSpanElement
   private durationInterval: any = null
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
@@ -85,6 +86,8 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.el.onpause = this.onPause.bind(this)
     this.el.onplaying = this.onPlaying.bind(this)
     this.el.onended = this.onEnded.bind(this)
+
+    this.clickableBar.onmousemove = this.clickableBarMouseMove.bind(this)
 
     const playPauseFnc = () => {
       if (this.el.paused) {
@@ -181,6 +184,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     )
     this.totalTimeEl = wrapperEl.querySelector(`.${styles.totalTime}`)
     this.currentTimeEl = wrapperEl.querySelector(`.${styles.currentTime}`)
+    this.tooltipEl = wrapperEl.querySelector(`.${styles.tooltip}`)
 
     this.el =
       typeof this._rawArgs.el === 'object'
@@ -209,10 +213,25 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   }
 
   changeTimeToSelected(e: any) {
-    const percentage = (e.offsetX / e.target.offsetWidth) * 100
-    const time = (percentage * this.el.duration) / 100
+    const percentage = this.calculateMouseEventPercentage(e)
+    const time = this.getTimeByPercentage(percentage)
     this.el.currentTime = time
     this.el.play()
     this.updateProgressBar()
+  }
+
+  calculateMouseEventPercentage(event: any) {
+    return (event.offsetX / event.target.offsetWidth) * 100
+  }
+
+  getTimeByPercentage(percentage: number) {
+    return (percentage * this.el.duration) / 100
+  }
+
+  clickableBarMouseMove(e: any) {
+    const percentage = this.calculateMouseEventPercentage(e)
+    const time = secondFormat(this.getTimeByPercentage(percentage))
+    this.tooltipEl.style.left = `${percentage - 3}%`
+    this.tooltipEl.innerText = time
   }
 }
