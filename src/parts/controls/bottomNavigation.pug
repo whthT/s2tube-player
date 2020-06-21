@@ -5,6 +5,7 @@
 - var volumeMuteSVG = require('../../assets/svgs/solid/volume-mute.svg')
 - var expandSVG = require('../../assets/svgs/solid/expand.svg')
 - var compressSVG = require('../../assets/svgs/solid/compress.svg')
+- var cogSVG = require('../../assets/svgs/solid/cog.svg')
 
 div(class=styles.bottomNavigation)
     div(class=styles.bottomNavigation__inner)
@@ -29,6 +30,8 @@ div(class=styles.bottomNavigation)
                     div(class=styles.volumeRangeClickableBar)
                     span(class=styles.volumeRangeActiveBar)
             div(class=styles.bottomNavigationRightSide)
-                button(class=styles.fullscreenToggle)
-                    | !{expandSVG}
-                    | !{compressSVG}
+                button(class=styles.configsMenuTrigger) !{cogSVG}
+                div(class=styles.configsMenuWrapper)
+                    div(class=styles.configMenuList)
+                        div(class=styles.configMenuSourceList)
+                button(class=styles.fullscreenToggle) !{expandSVG + compressSVG}

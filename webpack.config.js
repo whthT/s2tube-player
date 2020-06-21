@@ -32,7 +32,8 @@ const options = {
   devServer: {
     contentBase: [path.join(__dirname, 'dist'), path.join(__dirname, 'public')],
     compress: true,
-    port: 9000
+    port: 9000,
+    writeToDisk: true
   },
   module: {
     rules: [
@@ -55,7 +56,7 @@ const options = {
       },
       {
         test: /\.svg$/,
-        loader: 'svg-inline-loader'
+        use: ['svg-inline-loader']
       },
       {
         test: /\.pug$/,
@@ -63,7 +64,11 @@ const options = {
       }
     ]
   },
-  plugins: [new MiniCssExtractPlugin()],
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'S2TubePlayer.css'
+    })
+  ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js']
   }

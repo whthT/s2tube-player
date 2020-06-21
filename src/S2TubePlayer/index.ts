@@ -28,15 +28,19 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private durationInterval: any = null
   private previouslyVolume: number = 0.6
   private isFullscreen: Boolean = false
+  private activeSourceSize: number = null
+  private isConfigsMenuOpened: Boolean = false
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
 
-    this.sources = args.sources || []
+    this.sources = args.sources
+      ? args.sources.sort((source) => source.size).reverse()
+      : []
     this.captions = args.captions || []
     this.download = args.download || null
-
+    this.onInit()
     this.el = this.getVideoElement(args.el)
-    this.container = this.createElement('div', {
+    this.container = this.createElement('div', null, {
       class: `${styles.wrapper} ${styles.paused}`
     })
 
@@ -44,8 +48,12 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.registerVideoEvents()
   }
 
-  createElement(tag: string, props: any = {}): any {
-    return this.elementPropModifier(document.createElement(tag), props)
+  createElement(tag: string, text: string | any = null, props: any = {}): any {
+    const element = document.createElement(tag)
+    if (text) {
+      element.innerText = text
+    }
+    return this.elementPropModifier(element, props)
   }
 
   elementPropModifier(
@@ -53,7 +61,9 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     props: { [key: string]: string }
   ): any {
     for (const propName in props) {
-      el.setAttribute(propName, props[propName])
+      if (props[propName]) {
+        el.setAttribute(propName, props[propName])
+      }
     }
     return el
   }
@@ -70,13 +80,17 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       class: styles.video__inner
     })
 
-    const sources = this.sources.map((source) =>
-      this.createElement('source', source)
+    this.sources = this.sources.map((source) => ({
+      ...source,
+      el: this.createElement('source', null, source)
+    }))
+    const cookiedSourceSize = Cookies.get('s2tube_player_active_source')
+
+    const activeSource = this.sources.find(
+      (source) => source.size == cookiedSourceSize
     )
 
-    for (const source of sources) {
-      el.appendChild(source)
-    }
+    el.appendChild(activeSource ? activeSource.el : this.sources[0].el)
     // @ts-ignore
     el.load()
 
@@ -117,6 +131,10 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       .querySelector(`.${styles.fullscreenToggle}`)
       .addEventListener('click', this.toggleFullscreen.bind(this))
 
+    this.controlsElement
+      .querySelector(`.${styles.configsMenuTrigger}`)
+      .addEventListener('click', this.toggleConfigsMenu.bind(this))
+
     this.el.onloadeddata = () => {
       this.finishLoad()
       this.onLoad()
@@ -135,12 +153,29 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     }
   }
 
-  onPlaying() {}
+  onPlaying() {
+    this.container.classList.remove(styles.waiting)
+  }
+
+  onInit() {
+    const cookieActiveSource = Cookies.get('s2tube_player_active_source')
+    let source = this.sources[0].size
+    if (cookieActiveSource) {
+      const _source = this.sources.find(
+        (source) => source.size == cookieActiveSource
+      )
+      if (_source) {
+        source = _source.size
+      }
+    }
+
+    Cookies.set('s2tube_player_active_source', source)
+    this.activeSourceSize = source
+  }
 
   onPlay() {
     this.container.classList.add(styles.playing)
     this.container.classList.remove(styles.paused)
-    this.container.classList.remove(styles.waiting)
 
     this.updateProgressBar()
     this.durationInterval = setInterval(this.updateProgressBar.bind(this), 1000)
@@ -196,7 +231,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   initializeStructure() {
     const videoWrapper = wrap(
       this.el,
-      this.createElement('div', { class: styles.video })
+      this.createElement('div', null, { class: styles.video })
     )
     this.container = wrap(videoWrapper, this.container)
     const controlsDOM = strToDom(
@@ -220,6 +255,26 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       typeof this._rawArgs.el === 'object'
         ? this._rawArgs.el
         : document.querySelector(this._rawArgs.el)
+
+    this.placeSourcesToConfigMenu()
+  }
+
+  placeSourcesToConfigMenu() {
+    const configMenuSourcesListEl = this.container.querySelector(
+      `.${styles.configMenuSourceList}`
+    )
+    for (const source of this.sources) {
+      const sourceElement = this.createElement('a', `${source.size}P`, {
+        href: '#',
+        'data-size': source.size,
+        class: this.activeSourceSize === source.size ? styles.active : null
+      })
+      sourceElement.addEventListener('click', (e: MouseEvent) => {
+        e.preventDefault()
+        this.setActiveSourceSize(source)
+      })
+      configMenuSourcesListEl.appendChild(sourceElement)
+    }
   }
 
   finishLoad() {
@@ -335,5 +390,37 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
         document.msExitFullscreen()
       }
     }
+  }
+
+  setActiveSourceSize(source: Source) {
+    this.activeSourceSize = source.size
+    Cookies.set('s2tube_player_active_source', this.activeSourceSize)
+    const currentTime = this.el.currentTime
+    this.el.querySelector('source').remove()
+    this.el.appendChild(source.el)
+    this.el.load()
+    this.el.currentTime = currentTime
+    this.el.play()
+
+    this.controlsElement
+      .querySelector(`.${styles.configMenuSourceList} a.${styles.active}`)
+      .classList.remove(styles.active)
+
+    this.controlsElement
+      .querySelector(
+        `.${styles.configMenuSourceList} a[data-size='${source.size}']`
+      )
+      .classList.add(styles.active)
+
+    this.toggleConfigsMenu()
+  }
+
+  toggleConfigsMenu() {
+    this.isConfigsMenuOpened = !this.isConfigsMenuOpened
+    this.controlsElement
+      .querySelector(`.${styles.configsMenuTrigger}`)
+      .classList[this.isConfigsMenuOpened ? 'add' : 'remove'](
+        styles.configsMenuOpened
+      )
   }
 }

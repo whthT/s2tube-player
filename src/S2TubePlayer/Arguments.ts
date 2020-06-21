@@ -8,6 +8,7 @@ export interface Source {
   type: string
   src: string
   size: number
+  el?: HTMLSourceElement
 }
 export interface S2TubePlayerArgs {
   el: HTMLVideoElement

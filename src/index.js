@@ -1,8 +1,8 @@
 import S2TubePlayer from './S2TubePlayer'
 
-new S2TubePlayer({
+const player = new S2TubePlayer({
   el: '#player',
-  autoPlay: true,
+  autoPlay: false,
   sources: [
     {
       type: 'video/mp4',
@@ -40,3 +40,5 @@ new S2TubePlayer({
   ],
   download: [576]
 })
+
+console.log(player)
