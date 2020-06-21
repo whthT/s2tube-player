@@ -4,8 +4,7 @@ import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
 import append from '../lib/elementAppend'
 import strToDom from '../lib/strToDom'
-// @ts-ignore
-import only from 'only'
+import secondFormat from '../lib/SecondFormat'
 export default class S2TubePlayer implements S2TubePlayerArgs {
   public el: HTMLVideoElement = null
   public autoPlay: boolean = false
@@ -17,6 +16,13 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   public container: any
   private _rawArgs: S2TubePlayerArgs
   private controlsElement: HTMLDivElement
+  private progressBar: HTMLDivElement
+  private generalProgressBar: HTMLDivElement
+  private clickableBar: HTMLDivElement
+  private currentTimeEl = HTMLSpanElement
+  private totalTimeEl = HTMLSpanElement
+  private bufferedProgressBar: HTMLDivElement
+  private durationInterval: any = null
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
 
@@ -77,6 +83,8 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   registerVideoEvents() {
     this.el.onplay = this.onPlay.bind(this)
     this.el.onpause = this.onPause.bind(this)
+    this.el.onplaying = this.onPlaying.bind(this)
+    this.el.onended = this.onEnded.bind(this)
 
     const playPauseFnc = () => {
       if (this.el.paused) {
@@ -93,6 +101,11 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       .querySelector(`.${styles.playPauseButton}`)
       .addEventListener('click', playPauseFnc)
 
+    this.clickableBar.addEventListener(
+      'click',
+      this.changeTimeToSelected.bind(this)
+    )
+
     this.el.onloadeddata = () => {
       this.finishLoad()
       this.onLoad()
@@ -102,24 +115,35 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
     this.el.onprogress = () => {
       if (this.el.buffered.length) {
-        console.log('BUFFERED', this.el.buffered.end(0))
+        this.showBufferedLength(
+          this.el.buffered.start(0),
+          this.el.buffered.end(0),
+          this.el.duration
+        )
       }
     }
   }
+
+  onPlaying() {}
 
   onPlay() {
     this.container.classList.add(styles.playing)
     this.container.classList.remove(styles.paused)
     this.container.classList.remove(styles.waiting)
+
+    this.updateProgressBar()
+    this.durationInterval = setInterval(this.updateProgressBar.bind(this), 1000)
   }
   onPause() {
     this.container.classList.add(styles.paused)
     this.container.classList.remove(styles.playing)
     this.container.classList.remove(styles.waiting)
+    if (this.durationInterval !== null) {
+      clearInterval(this.durationInterval)
+    }
   }
   onWaiting() {
-    this.container.classList.remove(styles.playing)
-    this.container.classList.remove(styles.paused)
+    this.container.classList.add(styles.playing)
     this.container.classList.add(styles.waiting)
   }
   onLoad() {
@@ -127,6 +151,12 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.container.classList.add(
       this.el.paused ? styles.paused : styles.playing
     )
+  }
+
+  onEnded() {
+    this.progressBar.style.width = '100%'
+    // @ts-ignore
+    this.currentTimeEl.innerText = this.totalTimeEl.innerText
   }
 
   initializeStructure() {
@@ -143,6 +173,14 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
     const wrapperEl = append(this.container, controlsDOM.querySelector('div'))
     this.controlsElement = wrapperEl.querySelector(`.${styles.controls}`)
+    this.progressBar = wrapperEl.querySelector(`.${styles.progressBar__inner}`)
+    this.generalProgressBar = wrapperEl.querySelector(`.${styles.progressBar}`)
+    this.clickableBar = wrapperEl.querySelector(`.${styles.clickableBar}`)
+    this.bufferedProgressBar = wrapperEl.querySelector(
+      `.${styles.bufferedProgressBar}`
+    )
+    this.totalTimeEl = wrapperEl.querySelector(`.${styles.totalTime}`)
+    this.currentTimeEl = wrapperEl.querySelector(`.${styles.currentTime}`)
 
     this.el =
       typeof this._rawArgs.el === 'object'
@@ -154,5 +192,27 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     if (this.autoPlay) {
       this.el.play()
     }
+    // @ts-ignore
+    this.totalTimeEl.innerText = secondFormat(this.el.duration)
+  }
+  showBufferedLength(_start: number, end: number, duration: number) {
+    const endPercentage = (end * 100) / duration
+    this.bufferedProgressBar.style.width = `${endPercentage}%`
+  }
+
+  updateProgressBar() {
+    const currentTime = secondFormat(this.el.currentTime)
+    // @ts-ignore
+    this.currentTimeEl.innerText = currentTime
+    const percentage = (this.el.currentTime * 100) / this.el.duration
+    this.progressBar.style.width = `${percentage}%`
+  }
+
+  changeTimeToSelected(e: any) {
+    const percentage = (e.offsetX / e.target.offsetWidth) * 100
+    const time = (percentage * this.el.duration) / 100
+    this.el.currentTime = time
+    this.el.play()
+    this.updateProgressBar()
   }
 }

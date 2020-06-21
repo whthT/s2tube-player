@@ -6,6 +6,12 @@
 @mixin relative {
   position: relative;
 }
+
+@mixin animatedProgressbar {
+  width: 0;
+  transition: width 0.4s;
+}
+
 .wrapper {
   display: block;
   @include noSpaces;
@@ -32,7 +38,7 @@
     align-items: center;
     justify-content: space-between;
     flex-direction: column;
-
+    overflow: hidden;
     .bigPlayPauseButton {
       display: none;
       > svg {
@@ -50,24 +56,82 @@
       .bigPlayPauseButton {
         display: block;
       }
+      .bottomNavigation {
+        margin-bottom: 0;
+      }
     }
     .bottomNavigation {
-      height: 40px;
-      background-color: rgba(0, 0, 0, 0.18);
+      background-color: rgba(0, 0, 0, 0.63);
       width: 100%;
-      align-items: center;
       display: flex;
-      justify-content: space-between;
-      .playPauseButton {
-        outline: none;
-        cursor: pointer;
-        appearance: none;
-        border: none;
-        background: none;
-        width: 32px;
-        height: 32px;
-        svg {
-          fill: $white;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding-top: 1em;
+      /*margin-bottom: -100%;
+      transition: margin-bottom 0.5s;*/
+      &__inner {
+        width: 96%;
+        .bottomNavigationFlexer {
+          display: flex;
+          margin: 0.5em;
+          justify-content: flex-start;
+          align-items: center;
+          .playPauseButton {
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            border: none;
+            background: none;
+            width: 32px;
+            height: 32px;
+            svg {
+              fill: $white;
+            }
+          }
+
+          .timeRanges {
+            font-family: Arial, Helvetica, sans-serif;
+            .currentTime {
+              color: $white;
+              &::after {
+                content: '/';
+                margin: 0 0.5em;
+              }
+            }
+            .totalTime {
+              color: #aaa;
+            }
+          }
+        }
+
+        .progressBar {
+          height: 10px;
+          background-color: rgba(255, 255, 255, 0.2);
+          display: flex;
+          align-items: center;
+          margin: 0 auto;
+          width: 100%;
+          position: relative;
+          .clickableBar {
+            position: absolute;
+            width: 100%;
+            background-color: transparent;
+            z-index: 100;
+            height: 10px;
+            cursor: pointer;
+          }
+          .bufferedProgressBar {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.4);
+            position: absolute;
+            @include animatedProgressbar;
+          }
+          &__inner {
+            height: 10px;
+            background-color: #f2f2f2;
+            @include animatedProgressbar;
+          }
         }
       }
     }

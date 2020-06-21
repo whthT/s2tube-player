@@ -1,7 +1,15 @@
 - var playSVG = require('../../assets/svgs/solid/play-circle.svg')
 - var pauseSVG = require('../../assets/svgs/solid/pause.svg')
 div(class=styles.bottomNavigation)
-    button(class=styles.playPauseButton)
-        | !{playSVG}
-        | !{pauseSVG}
-    
+    div(class=styles.bottomNavigation__inner)
+        div(class=styles.progressBar)
+            div(class=styles.clickableBar)
+            div(class=styles.bufferedProgressBar, style="width: 0%")
+            div(class=styles.progressBar__inner, style="width: 0%")
+        div(class=styles.bottomNavigationFlexer)
+            button(class=styles.playPauseButton)
+                | !{playSVG}
+                | !{pauseSVG}
+            div(class=styles.timeRanges)
+                span(class=styles.currentTime) 00:00
+                span(class=styles.totalTime) 00:00
