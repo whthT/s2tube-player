@@ -1,5 +1,5 @@
 import styles from '../styles/main.scss'
-import { S2TubePlayerArgs, Caption, Source } from './Arguments'
+import { S2TubePlayerArgs, Caption, Source, Commercials } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
 import append from '../lib/elementAppend'
@@ -7,18 +7,22 @@ import strToDom from '../lib/strToDom'
 import secondFormat from '../lib/SecondFormat'
 // @ts-ignore
 import Cookies from 'js-cookie'
-export default class S2TubePlayer implements S2TubePlayerArgs {
+import { CommercialsShowTypes } from './CommercialsShowTypes'
+
+class S2TubePlayer implements S2TubePlayerArgs {
   public el: HTMLVideoElement = null
   public autoPlay: boolean = false
   public controls: boolean = false
   public captions: Caption[] = []
   public download: number | number[] = null
   public sources: Source[] = []
+  public commercials: Commercials[] = []
 
   public container: any
   private _rawArgs: S2TubePlayerArgs
   private controlsElement: HTMLDivElement
   private progressBar: HTMLDivElement
+  private progressBarWrapper: HTMLDivElement
   private clickableBar: HTMLDivElement
   private currentTimeEl = HTMLSpanElement
   private totalTimeEl = HTMLSpanElement
@@ -36,6 +40,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.sources = args.sources
       ? args.sources.sort((source) => source.size).reverse()
       : []
+    this.commercials = this.normalizeCommercials(args.commercials) || []
     this.captions = args.captions || []
     this.download = args.download || null
     this.onInit()
@@ -46,8 +51,29 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
     this.initializeStructure()
     this.registerVideoEvents()
+    this.placeCommercialsNotifications()
+    console.log(this)
   }
+  normalizeCommercials(commercials: Commercials[]) {
+    const _commercials = []
+    for (const comm of commercials) {
+      if (Array.isArray(comm.showOn)) {
+        for (const showOn of comm.showOn) {
+          _commercials.push({
+            ...comm,
+            showOn
+          })
+        }
+      } else {
+        _commercials.push(comm)
+      }
+    }
 
+    return _commercials.map((v) => ({
+      ...v,
+      applySkipInSeconds: v.applySkipInSeconds || 5
+    }))
+  }
   createElement(tag: string, text: string | any = null, props: any = {}): any {
     const element = document.createElement(tag)
     if (text) {
@@ -184,8 +210,8 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.container.classList.add(styles.playing)
     this.container.classList.remove(styles.paused)
 
-    this.updateProgressBar()
-    this.durationInterval = setInterval(this.updateProgressBar.bind(this), 1000)
+    this.tick()
+    this.durationInterval = setInterval(this.tick.bind(this), 1000)
   }
   onPause() {
     this.container.classList.add(styles.paused)
@@ -210,6 +236,10 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.progressBar.style.width = '100%'
     // @ts-ignore
     this.currentTimeEl.innerText = this.totalTimeEl.innerText
+  }
+
+  tick() {
+    this.updateProgressBar()
   }
 
   onVolumeChange() {
@@ -250,6 +280,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     const wrapperEl = append(this.container, controlsDOM.querySelector('div'))
     this.controlsElement = wrapperEl.querySelector(`.${styles.controls}`)
     this.progressBar = wrapperEl.querySelector(`.${styles.progressBar__inner}`)
+    this.progressBarWrapper = wrapperEl.querySelector(`.${styles.progressBar}`)
     this.clickableBar = wrapperEl.querySelector(`.${styles.clickableBar}`)
     this.bufferedProgressBar = wrapperEl.querySelector(
       `.${styles.bufferedProgressBar}`
@@ -445,7 +476,46 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       this.container.classList.remove(styles.hideControls)
     }
     this.hideControlsTimeout = setTimeout(() => {
-      this.container.classList.add(styles.hideControls)
+      if (!this.isConfigsMenuOpened) {
+        this.container.classList.add(styles.hideControls)
+      }
     }, 500)
   }
+
+  getCommercialsProgressbarNotifier(leftPercentage?: any) {
+    const notifier = this.createElement('span', null, {
+      class: styles.progressBarCommercials
+    })
+    if (leftPercentage) {
+      notifier.style.left = `${leftPercentage}%`
+    }
+    return notifier
+  }
+
+  placeCommercialsNotifications() {
+    for (const commercials of this.commercials) {
+      if (commercials.showOn === CommercialsShowTypes.START) {
+        this.progressBarWrapper.appendChild(
+          this.getCommercialsProgressbarNotifier()
+        )
+      } else if (commercials.showOn === CommercialsShowTypes.HALF_OF_VIDEO) {
+        this.progressBarWrapper.appendChild(
+          this.getCommercialsProgressbarNotifier(50)
+        )
+      } else if (commercials.showOn === CommercialsShowTypes.END) {
+        this.progressBarWrapper.appendChild(
+          this.getCommercialsProgressbarNotifier(100)
+        )
+        // @ts-ignore
+      } else if (parseInt(commercials.showOn)) {
+        this.progressBarWrapper.appendChild(
+          this.getCommercialsProgressbarNotifier(commercials.showOn)
+        )
+      }
+    }
+  }
 }
+// @ts-ignore
+S2TubePlayer.__proto__.CommercialsShowTypes = CommercialsShowTypes
+
+export default S2TubePlayer

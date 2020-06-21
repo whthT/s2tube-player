@@ -38,7 +38,13 @@ const player = new S2TubePlayer({
       lang: 'fr'
     }
   ],
-  download: [576]
+  commercials: [
+    {
+      type: 'video/mp4',
+      src: '/mov_bbb.mp4',
+      showOn: [S2TubePlayer.CommercialsShowTypes.START, 10, 20, 30, 40, 50, 80]
+    }
+  ]
 })
 
 console.log(player)
