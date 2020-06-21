@@ -1,0 +1,13 @@
+@mixin WrapperStatusPaused {
+  &.paused {
+    .bigPlayPauseButton,
+    .playPauseButton {
+      svg:first-child {
+        display: block;
+      }
+      svg:last-child {
+        display: none;
+      }
+    }
+  }
+}

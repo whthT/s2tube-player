@@ -1,0 +1,128 @@
+.bottomNavigation {
+  background-color: rgba(0, 0, 0, 0.63);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 1em;
+  &__inner {
+    width: 96%;
+  }
+}
+.playPauseButton {
+  @include controlIcon;
+}
+.timeRanges {
+  @include ArialFont;
+  margin-left: 1em;
+  .currentTime {
+    color: $white;
+    &::after {
+      content: '/';
+      @include bottomNavigationDivider;
+    }
+  }
+  .totalTime {
+    color: #aaa;
+  }
+}
+.volume {
+  @include bottomNavigationDivider;
+  @include controlIcon;
+  svg:not(:nth-child(1)) {
+    display: none;
+  }
+}
+.volumeRange {
+  display: block;
+  width: 100%;
+  background: $progressBarEmptyBgColor;
+  height: 8px;
+  width: 90px;
+  position: relative;
+  .volumeRangeClickableBar {
+    width: 100%;
+    height: 8px;
+    background: transparent;
+    cursor: pointer;
+    position: absolute;
+  }
+  .volumeRangeActiveBar {
+    display: block;
+    height: 8px;
+    @include animatedProgressbar;
+    background: $progressBarActiveBgColor;
+  }
+}
+.bottomNavigationLeftSide,
+.bottomNavigationRightSide {
+  @include bottomNavigationAligns;
+}
+.bottomNavigationFlexer {
+  display: flex;
+  margin: 0.5em 0.5em 0.5em -5px;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+  z-index: 20;
+}
+.fullscreenToggle {
+  @include controlIcon;
+  svg:not(:first-child) {
+    display: none;
+  }
+}
+.configMenuSourceList {
+  display: flex;
+  flex-direction: column;
+}
+.configMenuList {
+  a {
+    @include ArialFont();
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    line-height: 1;
+    padding: 7px 0 7px 15px;
+    outline: none;
+    position: relative;
+    display: block;
+    width: 100%;
+    z-index: 22;
+    &:hover {
+      color: $white;
+    }
+    &.active {
+      color: $primaryColor;
+      font-weight: bold;
+    }
+  }
+}
+.configsMenuWrapper {
+  position: absolute;
+  bottom: 37px;
+  background-color: #333;
+  padding: 8px 20px 3px 8px;
+  margin-left: -10px;
+  display: none;
+
+  @include hasBottomArrow(#333);
+}
+.configsMenuTrigger {
+  @include controlIcon;
+  svg {
+    transition: transform 0.3s ease-in-out;
+  }
+  &.configsMenuOpened {
+    svg {
+      transform: rotate(30deg);
+    }
+    & + .configsMenuWrapper {
+      display: block;
+    }
+  }
+}
+.bottomNavigationRightSide {
+  justify-content: flex-end;
+}

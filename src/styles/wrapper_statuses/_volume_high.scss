@@ -1,0 +1,12 @@
+@mixin WrapperStatusVolumeHigh {
+  &.volumeHigh {
+    .volume {
+      svg:nth-child(1) {
+        display: block;
+      }
+      svg:nth-child(2) {
+        display: none;
+      }
+    }
+  }
+}

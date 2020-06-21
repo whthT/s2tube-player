@@ -1,0 +1,13 @@
+.bigPlayPauseButton {
+  display: none;
+  > svg {
+    fill: $primaryColor;
+    display: none;
+  }
+  width: 64px;
+  height: 64px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  outline: none;
+}

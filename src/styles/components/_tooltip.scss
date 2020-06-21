@@ -1,0 +1,14 @@
+.tooltip {
+  @include ArialFont;
+  background-color: #fff;
+  border-radius: 1px;
+  color: #000;
+  font-size: 10px;
+  height: auto;
+  line-height: 1;
+  padding: 7px 10px;
+  position: absolute;
+  top: -32px;
+  display: none;
+  @include hasBottomArrow($white);
+}

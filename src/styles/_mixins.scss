@@ -1,0 +1,52 @@
+@mixin noSpaces {
+  margin: 0;
+  padding: 0;
+}
+@mixin relative {
+  position: relative;
+}
+
+@mixin animatedProgressbar {
+  width: 0;
+  transition: width 0.4s;
+}
+@mixin bottomNavigationDivider {
+  margin: 0 0.5em;
+}
+@mixin ArialFont {
+  font-family: Arial, Helvetica, sans-serif;
+}
+@mixin hasBottomArrow($color) {
+  &::after {
+    content: '';
+    top: 100%;
+    position: absolute;
+    left: 50%;
+    height: 14px;
+    width: 14px;
+    border-radius: 1px;
+    background-color: $color;
+    transform-origin: 75% 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    z-index: -1;
+  }
+}
+@mixin controlIcon {
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  background: none;
+  width: 32px;
+  height: 32px;
+  svg {
+    fill: $white;
+  }
+}
+
+@mixin bottomNavigationAligns {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}

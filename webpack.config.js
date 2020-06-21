@@ -12,7 +12,7 @@ const cssModulesOptions = {
 
 if (!dev) {
   cssModulesOptions.modules.getLocalIdent = createMinifier({
-    prefix: '_'
+    prefix: 's2tp_'
   })
 }
 
@@ -26,6 +26,7 @@ const options = {
   output: {
     library: 'S2TubePlayer',
     libraryTarget: 'umd',
+    libraryExport: 'default',
     path: path.resolve(__dirname, './dist'),
     filename: 'S2TubePlayer.js'
   },

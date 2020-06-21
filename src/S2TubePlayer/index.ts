@@ -1,4 +1,3 @@
-// @ts-nocheck
 import styles from '../styles/main.scss'
 import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
@@ -225,7 +224,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       }
     }
 
-    Cookies.set('s2tube_player_volume', this.el.volume.toFixed(1))
+    Cookies.set('s2tube_player_volume', this.el.volume.toFixed(3))
   }
 
   initializeStructure() {
@@ -382,11 +381,17 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       this.container.classList.remove(styles.fullscreen)
       if (document.exitFullscreen) {
         document.exitFullscreen()
+        // @ts-ignore
       } else if (document.mozCancelFullScreen) {
+        // @ts-ignore
         document.mozCancelFullScreen()
+        // @ts-ignore
       } else if (document.webkitExitFullscreen) {
+        // @ts-ignore
         document.webkitExitFullscreen()
+        // @ts-ignore
       } else if (document.msExitFullscreen) {
+        // @ts-ignore
         document.msExitFullscreen()
       }
     }

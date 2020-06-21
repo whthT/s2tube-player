@@ -1,0 +1,21 @@
+@mixin WrapperStatusFullscreen {
+  &.fullscreen {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    .video {
+      display: flex;
+      background: #000;
+    }
+    .fullscreenToggle {
+      svg:nth-child(1) {
+        display: none;
+      }
+      svg:nth-child(2) {
+        display: block;
+      }
+    }
+  }
+}
