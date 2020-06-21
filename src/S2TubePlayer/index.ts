@@ -7,8 +7,6 @@ import strToDom from '../lib/strToDom'
 import secondFormat from '../lib/SecondFormat'
 // @ts-ignore
 import Cookies from 'js-cookie'
-import isInt from '../lib/isInt'
-import isFloat from '../lib/isFloat'
 export default class S2TubePlayer implements S2TubePlayerArgs {
   public el: HTMLVideoElement = null
   public autoPlay: boolean = false
