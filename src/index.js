@@ -2,7 +2,7 @@ import S2TubePlayer from './S2TubePlayer'
 
 new S2TubePlayer({
   el: '#player',
-  autoPlay: false,
+  autoPlay: true,
   sources: [
     {
       type: 'video/mp4',

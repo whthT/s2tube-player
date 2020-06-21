@@ -27,5 +27,8 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=dev webpack-dev-server --config=webpack.config.js",
     "build": "cross-env NODE_ENV=prod webpack --config=webpack.config.js"
+  },
+  "dependencies": {
+    "js-cookie": "^2.2.1"
   }
 }

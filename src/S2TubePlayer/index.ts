@@ -5,6 +5,10 @@ import mainControls from '../parts/controls/main.pug'
 import append from '../lib/elementAppend'
 import strToDom from '../lib/strToDom'
 import secondFormat from '../lib/SecondFormat'
+// @ts-ignore
+import Cookies from 'js-cookie'
+import isInt from '../lib/isInt'
+import isFloat from '../lib/isFloat'
 export default class S2TubePlayer implements S2TubePlayerArgs {
   public el: HTMLVideoElement = null
   public autoPlay: boolean = false
@@ -24,7 +28,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private bufferedProgressBar: HTMLDivElement
   private tooltipEl: HTMLSpanElement
   private durationInterval: any = null
-  private previouslyVolume: number
+  private previouslyVolume: number = 0.6
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
 
@@ -100,6 +104,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     this.controlsElement
       .querySelector(`.${styles.volume}`)
       .addEventListener('click', this.toggleMute.bind(this))
+
     this.controlsElement
       .querySelector(`.${styles.volumeRangeClickableBar}`)
       .addEventListener('click', this.handleVolumeRangeClickOrDrag.bind(this))
@@ -181,6 +186,8 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
         this.container.classList.add(styles.volumeLow)
       }
     }
+
+    Cookies.set('s2tube_player_volume', this.el.volume.toFixed(1))
   }
 
   initializeStructure() {
@@ -215,10 +222,26 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
 
   finishLoad() {
     if (this.autoPlay) {
-      this.el.play()
+      setTimeout(() => {
+        this.el.play()
+      }, 200)
     }
     // @ts-ignore
     this.totalTimeEl.innerText = secondFormat(this.el.duration)
+
+    const cookieVolume = Cookies.get('s2tube_player_volume')
+    const isMuted = Cookies.get('s2tube_player_muted') === 'true'
+    if (!isMuted) {
+      if (cookieVolume && parseFloat(cookieVolume)) {
+        this.el.volume = parseFloat(cookieVolume)
+      } else {
+        this.el.volume = 0.6
+      }
+    } else {
+      this.el.volume = 0
+    }
+    // Trigger one time for volume ranges
+    this.onVolumeChange()
   }
   showBufferedLength(_start: number, end: number, duration: number) {
     const endPercentage = (end * 100) / duration
@@ -257,12 +280,14 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   }
 
   toggleMute() {
-    if (this.el.volume > 0) {
+    const isMuted = !(this.el.volume > 0)
+    if (!isMuted) {
       this.previouslyVolume = this.el.volume
       this.el.volume = 0
     } else {
       this.el.volume = this.previouslyVolume
     }
+    Cookies.set('s2tube_player_muted', !isMuted)
   }
 
   togglePlayPause() {
