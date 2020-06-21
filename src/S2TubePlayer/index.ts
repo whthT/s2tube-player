@@ -1,4 +1,5 @@
-import styles, { wrapper } from '../styles/main.scss'
+// @ts-nocheck
+import styles from '../styles/main.scss'
 import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
@@ -19,7 +20,6 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private _rawArgs: S2TubePlayerArgs
   private controlsElement: HTMLDivElement
   private progressBar: HTMLDivElement
-  private generalProgressBar: HTMLDivElement
   private clickableBar: HTMLDivElement
   private currentTimeEl = HTMLSpanElement
   private totalTimeEl = HTMLSpanElement
@@ -27,6 +27,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
   private tooltipEl: HTMLSpanElement
   private durationInterval: any = null
   private previouslyVolume: number = 0.6
+  private isFullscreen: Boolean = false
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
 
@@ -111,6 +112,10 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
       'click',
       this.changeTimeToSelected.bind(this)
     )
+
+    this.controlsElement
+      .querySelector(`.${styles.fullscreenToggle}`)
+      .addEventListener('click', this.toggleFullscreen.bind(this))
 
     this.el.onloadeddata = () => {
       this.finishLoad()
@@ -203,7 +208,6 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     const wrapperEl = append(this.container, controlsDOM.querySelector('div'))
     this.controlsElement = wrapperEl.querySelector(`.${styles.controls}`)
     this.progressBar = wrapperEl.querySelector(`.${styles.progressBar__inner}`)
-    this.generalProgressBar = wrapperEl.querySelector(`.${styles.progressBar}`)
     this.clickableBar = wrapperEl.querySelector(`.${styles.clickableBar}`)
     this.bufferedProgressBar = wrapperEl.querySelector(
       `.${styles.bufferedProgressBar}`
@@ -222,7 +226,7 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     if (this.autoPlay) {
       setTimeout(() => {
         this.el.play()
-      }, 200)
+      }, 2000)
     }
     // @ts-ignore
     this.totalTimeEl.innerText = secondFormat(this.el.duration)
@@ -299,5 +303,37 @@ export default class S2TubePlayer implements S2TubePlayerArgs {
     const percentage = this.calculateMouseEventPercentage(event)
     const volume = (percentage * 1) / 100
     this.el.volume = volume
+    Cookies.remove('s2tube_player_muted')
+  }
+
+  toggleFullscreen() {
+    this.isFullscreen = !this.isFullscreen
+    var elem: any = document.documentElement
+    if (this.isFullscreen) {
+      this.container.classList.add(styles.fullscreen)
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen()
+      } else if (elem.mozRequestFullScreen) {
+        /* Firefox */
+        elem.mozRequestFullScreen()
+      } else if (elem.webkitRequestFullscreen) {
+        /* Chrome, Safari & Opera */
+        elem.webkitRequestFullscreen()
+      } else if (elem.msRequestFullscreen) {
+        /* IE/Edge */
+        elem.msRequestFullscreen()
+      }
+    } else {
+      this.container.classList.remove(styles.fullscreen)
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen()
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen()
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen()
+      }
+    }
   }
 }

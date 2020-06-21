@@ -3,6 +3,9 @@
 - var volumeDownSVG = require('../../assets/svgs/solid/volume-down.svg')
 - var volumeUpSVG = require('../../assets/svgs/solid/volume-up.svg')
 - var volumeMuteSVG = require('../../assets/svgs/solid/volume-mute.svg')
+- var expandSVG = require('../../assets/svgs/solid/expand.svg')
+- var compressSVG = require('../../assets/svgs/solid/compress.svg')
+
 div(class=styles.bottomNavigation)
     div(class=styles.bottomNavigation__inner)
         div(class=styles.progressBar)
@@ -11,17 +14,21 @@ div(class=styles.bottomNavigation)
             div(class=styles.bufferedProgressBar, style="width: 0%")
             div(class=styles.progressBar__inner, style="width: 0%")
         div(class=styles.bottomNavigationFlexer)
-            button(class=styles.playPauseButton)
-                | !{playSVG}
-                | !{pauseSVG}
-            div(class=styles.timeRanges)
-                span(class=styles.currentTime) 00:00
-                span(class=styles.totalTime) 00:00
-            button(class=styles.volume)
-                | !{volumeUpSVG}
-                | !{volumeDownSVG}
-                | !{volumeMuteSVG}
-            div(class=styles.volumeRange)
-                div(class=styles.volumeRangeClickableBar)
-                span(class=styles.volumeRangeActiveBar)
-                
+            div(class=styles.bottomNavigationLeftSide)
+                button(class=styles.playPauseButton)
+                    | !{playSVG}
+                    | !{pauseSVG}
+                div(class=styles.timeRanges)
+                    span(class=styles.currentTime) 00:00
+                    span(class=styles.totalTime) 00:00
+                button(class=styles.volume)
+                    | !{volumeUpSVG}
+                    | !{volumeDownSVG}
+                    | !{volumeMuteSVG}
+                div(class=styles.volumeRange)
+                    div(class=styles.volumeRangeClickableBar)
+                    span(class=styles.volumeRangeActiveBar)
+            div(class=styles.bottomNavigationRightSide)
+                button(class=styles.fullscreenToggle)
+                    | !{expandSVG}
+                    | !{compressSVG}
