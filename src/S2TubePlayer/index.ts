@@ -509,27 +509,9 @@ class S2TubePlayer implements S2TubePlayerArgs {
 
   placeCommercialsNotifications() {
     for (const commercials of this.commercials) {
-      if (commercials.showOn === CommercialsShowTypes.START) {
-        this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(0, commercials)
-        )
-      } else if (commercials.showOn === CommercialsShowTypes.HALF_OF_VIDEO) {
-        this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(50, commercials)
-        )
-      } else if (commercials.showOn === CommercialsShowTypes.END) {
-        this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(100, commercials)
-        )
-        // @ts-ignore
-      } else if (parseInt(commercials.showOn)) {
-        this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(
-            commercials.showOn,
-            commercials
-          )
-        )
-      }
+      this.progressBarWrapper.appendChild(
+        this.getCommercialsProgressbarNotifier(commercials.showOn, commercials)
+      )
     }
   }
 }
