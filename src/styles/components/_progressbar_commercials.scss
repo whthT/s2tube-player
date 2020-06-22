@@ -4,4 +4,9 @@
   width: 5px;
   background-color: #ffcc02;
   position: absolute;
+  z-index: 120;
+  @include HasProgressbarTooltip();
+  .progressBarTooltip {
+    left: 50%;
+  }
 }

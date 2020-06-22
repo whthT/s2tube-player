@@ -12,3 +12,15 @@
   display: none;
   @include hasBottomArrow($white);
 }
+
+@mixin HasProgressbarTooltip {
+  .progressBarTooltip {
+    @extend .tooltip;
+    top: -43px;
+  }
+  &:hover {
+    .progressBarTooltip {
+      display: block;
+    }
+  }
+}

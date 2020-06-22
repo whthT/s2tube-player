@@ -2,6 +2,7 @@ import styles from '../styles/main.scss'
 import { S2TubePlayerArgs, Caption, Source, Commercials } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
+import progressbarCommercialsRenderer from '../parts/progressbarCommercials.pug'
 import append from '../lib/elementAppend'
 import strToDom from '../lib/strToDom'
 import secondFormat from '../lib/SecondFormat'
@@ -77,7 +78,8 @@ class S2TubePlayer implements S2TubePlayerArgs {
   createElement(tag: string, text: string | any = null, props: any = {}): any {
     const element = document.createElement(tag)
     if (text) {
-      element.innerText = text
+      if (typeof text === 'string') element.innerHTML = text
+      else element.appendChild(text)
     }
     return this.elementPropModifier(element, props)
   }
@@ -475,20 +477,33 @@ class S2TubePlayer implements S2TubePlayerArgs {
     if (this.container.classList.contains(styles.hideControls)) {
       this.container.classList.remove(styles.hideControls)
     }
-    this.hideControlsTimeout = setTimeout(() => {
-      if (!this.isConfigsMenuOpened) {
-        this.container.classList.add(styles.hideControls)
-      }
-    }, 500)
+    // this.hideControlsTimeout = setTimeout(() => {
+    //   if (!this.isConfigsMenuOpened) {
+    //     this.container.classList.add(styles.hideControls)
+    //   }
+    // }, 500)
   }
 
-  getCommercialsProgressbarNotifier(leftPercentage?: any) {
-    const notifier = this.createElement('span', null, {
-      class: styles.progressBarCommercials
+  getCommercialsProgressbarNotifier(
+    leftPercentage?: any,
+    commercials?: Commercials
+  ) {
+    const notifier = strToDom(
+      progressbarCommercialsRenderer({
+        styles,
+        commercials,
+        leftPercentage
+      })
+    ).querySelector(`.${styles.progressBarCommercials}`)
+
+    notifier.addEventListener('mouseover', (e: any) => {
+      const tooltip: any = e.target.querySelector(
+        `.${styles.progressBarTooltip}`
+      )
+
+      tooltip.style.marginLeft = -(tooltip.clientWidth / 2) + 'px'
     })
-    if (leftPercentage) {
-      notifier.style.left = `${leftPercentage}%`
-    }
+
     return notifier
   }
 
@@ -496,20 +511,23 @@ class S2TubePlayer implements S2TubePlayerArgs {
     for (const commercials of this.commercials) {
       if (commercials.showOn === CommercialsShowTypes.START) {
         this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier()
+          this.getCommercialsProgressbarNotifier(0, commercials)
         )
       } else if (commercials.showOn === CommercialsShowTypes.HALF_OF_VIDEO) {
         this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(50)
+          this.getCommercialsProgressbarNotifier(50, commercials)
         )
       } else if (commercials.showOn === CommercialsShowTypes.END) {
         this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(100)
+          this.getCommercialsProgressbarNotifier(100, commercials)
         )
         // @ts-ignore
       } else if (parseInt(commercials.showOn)) {
         this.progressBarWrapper.appendChild(
-          this.getCommercialsProgressbarNotifier(commercials.showOn)
+          this.getCommercialsProgressbarNotifier(
+            commercials.showOn,
+            commercials
+          )
         )
       }
     }

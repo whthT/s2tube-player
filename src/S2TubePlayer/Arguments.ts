@@ -18,6 +18,8 @@ export interface Commercials {
   src: string
   showOn: CommercialsShowTypes | CommercialsShowTypes[]
   applySkipInSeconds?: number
+  title?: string
+  description?: string
 }
 
 export interface S2TubePlayerArgs {
