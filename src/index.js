@@ -42,7 +42,8 @@ const player = new S2TubePlayer({
     {
       type: 'video/mp4',
       src: '/mov_bbb.mp4',
-      showOn: [S2TubePlayer.CommercialsShowTypes.START, 10, 20, 30, 40, 50, 80]
+      showOn: [S2TubePlayer.CommercialsShowTypes.START, 10, 20, 30, 40, 50, 80],
+      title: 'Related Commercials'
     }
   ]
 })
