@@ -1,4 +1,4 @@
-import { CommercialsShowTypes } from './CommercialsShowTypes'
+import { ICommercials } from '../Commercials/index'
 
 export interface Caption {
   label: string
@@ -9,25 +9,17 @@ export interface Caption {
 export interface Source {
   type: string
   src: string
-  size: number
+  size?: number
   el?: HTMLSourceElement
 }
 
-export interface Commercials {
-  type: string
-  src: string
-  showOn: CommercialsShowTypes | CommercialsShowTypes[]
-  applySkipInSeconds?: number
-  title?: string
-  description?: string
-}
-
 export interface S2TubePlayerArgs {
-  el: HTMLVideoElement
+  el: HTMLVideoElement | any
   autoPlay?: boolean
   controls?: boolean
-  captions: Caption[]
-  download: number | number[]
+  captions?: Caption[]
+  download?: number | number[]
   sources: Source[]
-  commercials: Commercials[]
+  commercials?: ICommercials[]
+  isCommercialsPlayer?: Boolean
 }

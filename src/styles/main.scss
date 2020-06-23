@@ -15,4 +15,5 @@
   @include WrapperStatusVolumeLow();
   @include WrapperStatusFullscreen();
   @include WrapperStatusHideControls();
+  @include WrapperStatusShowingCommercials();
 }

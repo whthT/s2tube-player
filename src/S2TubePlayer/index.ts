@@ -1,5 +1,5 @@
 import styles from '../styles/main.scss'
-import { S2TubePlayerArgs, Caption, Source, Commercials } from './Arguments'
+import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
 import progressbarCommercialsRenderer from '../parts/progressbarCommercials.pug'
@@ -8,9 +8,17 @@ import strToDom from '../lib/strToDom'
 import secondFormat from '../lib/SecondFormat'
 // @ts-ignore
 import Cookies from 'js-cookie'
-import { CommercialsShowTypes } from './CommercialsShowTypes'
+import Commercials, {
+  ICommercials,
+  CommercialsShowTypes
+} from '../Commercials/index'
 
-class S2TubePlayer implements S2TubePlayerArgs {
+interface IImplements extends S2TubePlayerArgs {
+  play: () => void
+  pause: () => void
+}
+
+class S2TubePlayer implements IImplements {
   public el: HTMLVideoElement = null
   public autoPlay: boolean = false
   public controls: boolean = false
@@ -20,42 +28,50 @@ class S2TubePlayer implements S2TubePlayerArgs {
   public commercials: Commercials[] = []
 
   public container: any
-  private _rawArgs: S2TubePlayerArgs
-  private controlsElement: HTMLDivElement
-  private progressBar: HTMLDivElement
-  private progressBarWrapper: HTMLDivElement
-  private clickableBar: HTMLDivElement
-  private currentTimeEl = HTMLSpanElement
-  private totalTimeEl = HTMLSpanElement
-  private bufferedProgressBar: HTMLDivElement
-  private tooltipEl: HTMLSpanElement
-  private durationInterval: any = null
-  private hideControlsTimeout: any = null
-  private previouslyVolume: number = 0.6
-  private isFullscreen: Boolean = false
-  private activeSourceSize: number = null
-  private isConfigsMenuOpened: Boolean = false
+  public _rawArgs: S2TubePlayerArgs
+  public controlsElement: HTMLDivElement
+  public progressBar: HTMLDivElement
+  public progressBarWrapper: HTMLDivElement
+  public clickableBar: HTMLDivElement
+  public currentTimeEl = HTMLSpanElement
+  public totalTimeEl = HTMLSpanElement
+  public bufferedProgressBar: HTMLDivElement
+  public tooltipEl: HTMLSpanElement
+  public durationInterval: any = null
+  public hideControlsTimeout: any = null
+  public isFullscreen: Boolean = false
+  public activeSourceSize: number = null
+  public isConfigsMenuOpened: Boolean = false
+  public isCommercialsPlayer: Boolean = false
+  private __events: {
+    [key: string]: Function[]
+  } = {}
   constructor(args: S2TubePlayerArgs) {
     this._rawArgs = args
+    this.isCommercialsPlayer = args.isCommercialsPlayer
 
     this.sources = args.sources
       ? args.sources.sort((source) => source.size).reverse()
       : []
-    this.commercials = this.normalizeCommercials(args.commercials) || []
+    this.commercials =
+      args.commercials && args.commercials.length
+        ? this.normalizeCommercials(args.commercials)
+        : []
     this.captions = args.captions || []
     this.download = args.download || null
     this.onInit()
     this.el = this.getVideoElement(args.el)
     this.container = this.createElement('div', null, {
-      class: `${styles.wrapper} ${styles.paused}`
+      class: `${styles.wrapper} ${styles.paused}${
+        this.isCommercialsPlayer ? ` ${styles.commercialsWrapper}` : ''
+      }`
     })
 
     this.initializeStructure()
     this.registerVideoEvents()
     this.placeCommercialsNotifications()
-    console.log(this)
   }
-  normalizeCommercials(commercials: Commercials[]) {
+  normalizeCommercials(commercials: ICommercials[]) {
     const _commercials = []
     for (const comm of commercials) {
       if (Array.isArray(comm.showOn)) {
@@ -70,10 +86,16 @@ class S2TubePlayer implements S2TubePlayerArgs {
       }
     }
 
-    return _commercials.map((v) => ({
-      ...v,
-      applySkipInSeconds: v.applySkipInSeconds || 5
-    }))
+    return _commercials.map(
+      (commercials: ICommercials) =>
+        new Commercials(
+          {
+            ...commercials,
+            applySkipInSeconds: commercials.applySkipInSeconds || 5
+          },
+          this
+        )
+    )
   }
   createElement(tag: string, text: string | any = null, props: any = {}): any {
     const element = document.createElement(tag)
@@ -204,7 +226,9 @@ class S2TubePlayer implements S2TubePlayerArgs {
       }
     }
 
-    Cookies.set('s2tube_player_active_source', source)
+    if (source) {
+      Cookies.set('s2tube_player_active_source', source)
+    }
     this.activeSourceSize = source
   }
 
@@ -214,6 +238,8 @@ class S2TubePlayer implements S2TubePlayerArgs {
 
     this.tick()
     this.durationInterval = setInterval(this.tick.bind(this), 1000)
+
+    this.fireEvent('play')
   }
   onPause() {
     this.container.classList.add(styles.paused)
@@ -222,26 +248,63 @@ class S2TubePlayer implements S2TubePlayerArgs {
     if (this.durationInterval !== null) {
       clearInterval(this.durationInterval)
     }
+    this.fireEvent('pause')
   }
   onWaiting() {
     this.container.classList.add(styles.playing)
     this.container.classList.add(styles.waiting)
+    this.fireEvent('waiting')
   }
   onLoad() {
     this.container.classList.remove(styles.waiting)
     this.container.classList.add(
       this.el.paused ? styles.paused : styles.playing
     )
+    this.fireEvent('load')
   }
 
   onEnded() {
     this.progressBar.style.width = '100%'
     // @ts-ignore
     this.currentTimeEl.innerText = this.totalTimeEl.innerText
+    this.fireEvent('ended')
   }
 
   tick() {
     this.updateProgressBar()
+    this.showCommercialsIfCrossed()
+
+    this.fireEvent('tick')
+  }
+
+  showCommercialsIfCrossed() {
+    const currentPercentage = this.getCurrentPlayingPercentage()
+
+    const crossedCommercial = this.commercials
+      .filter(
+        (commerical) =>
+          commerical.showOn <= currentPercentage && !commerical.isEnded
+      )
+      .slice()
+      .pop()
+
+    if (crossedCommercial) {
+      crossedCommercial.show()
+      crossedCommercial.player.on('commercials:skipped', () => {
+        this.commercials = this.commercials.filter(
+          (v) =>
+            v.commercialsVideoUniqueID !==
+            crossedCommercial.commercialsVideoUniqueID
+        )
+        this.placeCommercialsNotifications()
+      })
+    }
+  }
+
+  getCurrentPlayingPercentage(): number {
+    return parseFloat(
+      ((this.el.currentTime * 100) / this.el.duration).toFixed(2)
+    )
   }
 
   onVolumeChange() {
@@ -249,7 +312,7 @@ class S2TubePlayer implements S2TubePlayerArgs {
     this.container.querySelector(
       `.${styles.volumeRangeActiveBar}`
     ).style.width = `${percentage}%`
-    if (this.el.volume === 0) {
+    if (this.el.muted) {
       this.container.classList.add(styles.muted)
       this.container.classList.remove(styles.volumeLow)
       this.container.classList.remove(styles.volumeHigh)
@@ -319,9 +382,12 @@ class S2TubePlayer implements S2TubePlayerArgs {
 
   finishLoad() {
     if (this.autoPlay) {
-      setTimeout(() => {
-        this.el.play()
-      }, 2000)
+      this.el
+        .play()
+        .then()
+        .catch(() => {
+          console.log('INTERACT WITH PLAY')
+        })
     }
     // @ts-ignore
     this.totalTimeEl.innerText = secondFormat(this.el.duration)
@@ -333,9 +399,10 @@ class S2TubePlayer implements S2TubePlayerArgs {
         this.el.volume = parseFloat(cookieVolume)
       } else {
         this.el.volume = 0.6
+        this.el.muted = false
       }
     } else {
-      this.el.volume = 0
+      this.el.muted = true
     }
     // Trigger one time for volume ranges
     this.onVolumeChange()
@@ -357,7 +424,7 @@ class S2TubePlayer implements S2TubePlayerArgs {
     const percentage = this.calculateMouseEventPercentage(e)
     const time = this.getTimeByPercentage(percentage)
     this.el.currentTime = time
-    this.el.play()
+    this.play()
     this.updateProgressBar()
   }
 
@@ -377,19 +444,13 @@ class S2TubePlayer implements S2TubePlayerArgs {
   }
 
   toggleMute() {
-    const isMuted = !(this.el.volume > 0)
-    if (!isMuted) {
-      this.previouslyVolume = this.el.volume
-      this.el.volume = 0
-    } else {
-      this.el.volume = this.previouslyVolume
-    }
-    Cookies.set('s2tube_player_muted', !isMuted)
+    this.el.muted = !this.el.muted
+    Cookies.set('s2tube_player_muted', this.el.muted)
   }
 
   togglePlayPause() {
     if (this.el.paused) {
-      this.el.play()
+      this.play()
     } else {
       this.el.pause()
     }
@@ -440,13 +501,15 @@ class S2TubePlayer implements S2TubePlayerArgs {
 
   setActiveSourceSize(source: Source) {
     this.activeSourceSize = source.size
-    Cookies.set('s2tube_player_active_source', this.activeSourceSize)
+    if (this.activeSourceSize) {
+      Cookies.set('s2tube_player_active_source', this.activeSourceSize)
+    }
     const currentTime = this.el.currentTime
     this.el.querySelector('source').remove()
     this.el.appendChild(source.el)
     this.el.load()
     this.el.currentTime = currentTime
-    this.el.play()
+    this.play()
 
     this.controlsElement
       .querySelector(`.${styles.configMenuSourceList} a.${styles.active}`)
@@ -486,7 +549,7 @@ class S2TubePlayer implements S2TubePlayerArgs {
 
   getCommercialsProgressbarNotifier(
     leftPercentage?: any,
-    commercials?: Commercials
+    commercials?: ICommercials
   ) {
     const notifier = strToDom(
       progressbarCommercialsRenderer({
@@ -508,11 +571,51 @@ class S2TubePlayer implements S2TubePlayerArgs {
   }
 
   placeCommercialsNotifications() {
+    this.controlsElement
+      .querySelectorAll(`.${styles.progressBarCommercials}`)
+      .forEach((el) => el.remove())
     for (const commercials of this.commercials) {
       this.progressBarWrapper.appendChild(
         this.getCommercialsProgressbarNotifier(commercials.showOn, commercials)
       )
     }
+  }
+
+  pause() {
+    this.el.pause()
+  }
+  play() {
+    return this.el.play()
+  }
+
+  on(eventName: string, callable: Function) {
+    if (!(eventName in this.__events)) {
+      this.__events[eventName] = []
+    }
+    this.__events[eventName].push(callable)
+  }
+
+  off(eventName: string, callable: Function) {
+    if (eventName in this.__events) {
+      const index = this.__events[eventName].findIndex(
+        (eventCallable) => eventCallable == callable
+      )
+      if (index >= 0) {
+        this.__events[eventName].splice(index, 1)
+      }
+    }
+  }
+
+  fireEvent(eventName: string) {
+    if (eventName in this.__events) {
+      for (const event of this.__events[eventName]) {
+        event()
+      }
+    }
+  }
+
+  destruction() {
+    this.container.remove()
   }
 }
 // @ts-ignore

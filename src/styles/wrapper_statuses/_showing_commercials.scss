@@ -1,0 +1,17 @@
+@mixin WrapperStatusShowingCommercials {
+  &.showingCommercials {
+    display: none;
+  }
+}
+
+.commercialsWrapper {
+  .configsMenuTrigger {
+    display: none;
+  }
+  .progressBar__inner {
+    background-color: $commercialsColor;
+  }
+  .bufferedProgressBar {
+    display: none;
+  }
+}

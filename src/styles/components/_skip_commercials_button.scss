@@ -1,0 +1,18 @@
+.skipCommercialsButton {
+  border: 2px solid #ffffff4f;
+  padding: 10px 20px;
+  font-size: 1.25em;
+  font-family: Arial;
+  position: absolute;
+  right: 0;
+  bottom: 24%;
+  border-right: none;
+  background: rgba(0, 0, 0, 0.42);
+  color: $white;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.4s;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}

@@ -2,7 +2,7 @@
   display: block;
   height: 100%;
   width: 5px;
-  background-color: #ffcc02;
+  background-color: $commercialsColor;
   position: absolute;
   z-index: 120;
   @include HasProgressbarTooltip();
