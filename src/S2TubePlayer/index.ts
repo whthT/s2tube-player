@@ -332,7 +332,6 @@ class S2TubePlayer implements IImplements {
         this.container.classList.add(styles.volumeLow)
       }
     }
-
     Cookies.set('s2tube_player_volume', this.el.volume.toFixed(3))
   }
 
