@@ -2,6 +2,7 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const createMinifier = require('css-loader-minify-class')
+const TerserPlugin = require('terser-webpack-plugin')
 const dev = process.env.NODE_ENV === 'dev'
 const cssModulesOptions = {
   modules: {
@@ -82,6 +83,20 @@ if (dev) {
       title: 'S2TubePlayer'
     })
   )
+}
+
+if (!dev) {
+  options.optimization = {
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          output: {
+            comments: false
+          }
+        }
+      })
+    ]
+  }
 }
 
 module.exports = options
