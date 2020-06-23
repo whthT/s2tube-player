@@ -17,10 +17,10 @@ if (!dev) {
 }
 
 const options = {
-  entry: path.join(
-    __dirname,
-    `src/${dev ? 'index.js' : 'S2TubePlayer/index.ts'}`
-  ),
+  entry: [
+    'core-js/stable',
+    path.join(__dirname, `src/${dev ? 'index.js' : 'S2TubePlayer/index.ts'}`)
+  ],
   mode: dev ? 'development' : 'production',
   devtool: dev ? 'inline-source-map' : 'none',
   output: {
@@ -52,7 +52,7 @@ const options = {
       },
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: ['babel-loader'],
         exclude: /node_modules/
       },
       {

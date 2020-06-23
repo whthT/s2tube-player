@@ -1,5 +1,5 @@
 import S2TubePlayer from '../S2TubePlayer/index'
-import styles from '../styles/main.scss'
+import styles from '../styles/S2TubePlayer.scss'
 import strToDom from '../lib/strToDom'
 import CommercialsPlayer from '../parts/CommercialsPlayer/index.pug'
 import secondFormat from '../lib/SecondFormat'

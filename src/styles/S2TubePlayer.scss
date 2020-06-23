@@ -3,6 +3,8 @@
 @import 'components/components';
 @import 'wrapper_statuses/wrapper_statuses';
 
+@import 'ie11Compatible.scss';
+
 .wrapper {
   display: block;
   @include noSpaces;

@@ -1,4 +1,5 @@
-import styles from '../styles/main.scss'
+import 'core-js/stable'
+import styles from '../styles/S2TubePlayer.scss'
 import { S2TubePlayerArgs, Caption, Source } from './Arguments'
 import wrap from '../lib/elementWrap'
 import mainControls from '../parts/controls/main.pug'
@@ -12,6 +13,7 @@ import Commercials, {
   ICommercials,
   CommercialsShowTypes
 } from '../Commercials/index'
+import removeElement from '../lib/removeElement'
 
 interface IImplements extends S2TubePlayerArgs {
   play: () => void
@@ -514,7 +516,7 @@ class S2TubePlayer implements IImplements {
       Cookies.set('s2tube_player_active_source', this.activeSourceSize)
     }
     const currentTime = this.el.currentTime
-    this.el.querySelector('source').remove()
+    removeElement(this.el.querySelector('source'))
     this.el.appendChild(source.el)
     this.el.load()
     this.el.currentTime = currentTime
@@ -553,11 +555,11 @@ class S2TubePlayer implements IImplements {
     if (this.container.classList.contains(styles.hideControls)) {
       this.container.classList.remove(styles.hideControls)
     }
-    this.hideControlsTimeout = setTimeout(() => {
-      if (!this.isConfigsMenuOpened) {
-        this.container.classList.add(styles.hideControls)
-      }
-    }, 500)
+    // this.hideControlsTimeout = setTimeout(() => {
+    //   if (!this.isConfigsMenuOpened) {
+    //     this.container.classList.add(styles.hideControls)
+    //   }
+    // }, 500)
   }
 
   getCommercialsProgressbarNotifier(
@@ -586,7 +588,7 @@ class S2TubePlayer implements IImplements {
   placeCommercialsNotifications() {
     this.controlsElement
       .querySelectorAll(`.${styles.progressBarCommercials}`)
-      .forEach((el) => el.remove())
+      .forEach((el) => removeElement(el))
     for (const commercials of this.commercials) {
       this.progressBarWrapper.appendChild(
         this.getCommercialsProgressbarNotifier(
@@ -631,7 +633,7 @@ class S2TubePlayer implements IImplements {
   }
 
   destruction() {
-    this.container.remove()
+    removeElement(this.container)
   }
 }
 // @ts-ignore
