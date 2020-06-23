@@ -91,7 +91,7 @@ class S2TubePlayer implements IImplements {
         new Commercials(
           {
             ...commercials,
-            applySkipInSeconds: commercials.applySkipInSeconds || 5
+            applySkipIn: commercials.applySkipIn || 5
           },
           this
         )

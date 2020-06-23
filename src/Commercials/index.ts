@@ -12,10 +12,11 @@ export interface ICommercials {
   type: string
   src: string
   showOn: CommercialsShowTypes | CommercialsShowTypes[] | number
-  applySkipInSeconds?: number
+  applySkipIn?: number
   title?: string
   description?: string
   autoSkip?: Boolean
+  hideSkipButton?: Boolean
 }
 interface IImplements extends ICommercials {
   _commercials: ICommercials
@@ -32,11 +33,12 @@ export default class Commercials implements IImplements {
   public type: string
   public src: string
   public showOn: CommercialsShowTypes | CommercialsShowTypes[] | number
-  public applySkipInSeconds: number
+  public applySkipIn: number
   public title: string
   public description: string
   public parent: S2TubePlayer
   public autoSkip: Boolean
+  public hideSkipButton: Boolean
 
   public commercialsVideoUniqueID: string
   private videoEl: any = null
@@ -50,11 +52,12 @@ export default class Commercials implements IImplements {
     this.type = commercials.type
     this.src = commercials.src
     this.showOn = commercials.showOn
-    this.applySkipInSeconds = commercials.applySkipInSeconds
-    this.skipInTime = commercials.applySkipInSeconds
+    this.applySkipIn = commercials.applySkipIn
+    this.skipInTime = commercials.applySkipIn
     this.title = commercials.title
     this.description = commercials.description
     this.autoSkip = commercials.autoSkip
+    this.hideSkipButton = commercials.hideSkipButton
 
     this.parent = parent
 
@@ -74,7 +77,8 @@ export default class Commercials implements IImplements {
           }
         ],
         skipInTime: this.skipInTime,
-        skipButtonTitle: `Skip In ${this.skipInTime}`
+        skipButtonTitle: `Skip In ${this.skipInTime}`,
+        hideSkipButton: this.hideSkipButton
       })
     )
 
