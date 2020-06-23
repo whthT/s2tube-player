@@ -8,13 +8,13 @@ HTML5 Video player.
 
 ### Use
 
-~HTML~
+HTML
 
 ```html
 <video id="player"></video>
 ```
 
-~JAVASCRIPT~
+JAVASCRIPT
 
 ```js
 const player = new S2TubePlayer({
@@ -189,7 +189,7 @@ You can duplicate easily your commercials like this.
 }
 ```
 
-Becomes to;
+Becomes to;  
 ![Duplicated Commercials](https://github.com/whthT/s2tube-player/raw/master/_files/screen-005.png 'Duplicated Commercials')
 
 ## Events
@@ -268,7 +268,7 @@ const player = new S2TubePlayer({
 })
 ```
 
-Becomes to
+Becomes to  
 ![Source Management](https://github.com/whthT/s2tube-player/raw/master/_files/screen-006.png 'Source Management')
 
 ### Todos
