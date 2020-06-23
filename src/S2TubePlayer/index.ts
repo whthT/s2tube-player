@@ -288,7 +288,9 @@ class S2TubePlayer implements IImplements {
         (commercials) =>
           !commercials.isEnded &&
           (typeof commercials.showOn === 'string'
-            ? commercials.showOn == currenctTimeString
+            ? commercials.showOn == currenctTimeString ||
+              currentPercentage >=
+                commercials.getProgressbarPositionPercentage()
             : commercials.showOn <= currentPercentage)
       )
       .slice()

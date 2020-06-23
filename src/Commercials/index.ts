@@ -90,17 +90,18 @@ export default class Commercials implements IImplements {
   getProgressbarPositionPercentage() {
     if (typeof this.showOn === 'string') {
       const totalVideoDuration = new Date(
-        `01-01-2000 ${secondFormat(this.parent.el.duration, true)}`
+        `01/01/2000 ${secondFormat(this.parent.el.duration, true)}`
       )
       const commercialsShowOnDuration = new Date(
-        `01-01-2000 ${this.showOn.split(':').length <= 2 ? '00:' : ''}${
+        `01/01/2000 ${this.showOn.split(':').length <= 2 ? '00:' : ''}${
           this.showOn
         }`
       )
 
       const leftingDuration =
         // @ts-ignore
-        (totalVideoDuration - commercialsShowOnDuration) / 1000
+        (totalVideoDuration.getTime() - commercialsShowOnDuration.getTime()) /
+        1000
 
       return (
         ((this.parent.el.duration - leftingDuration) * 100) /
