@@ -1,10 +1,13 @@
 // @ts-nocheck
-export default function secondFormat(second: number) {
+export default function secondFormat(
+  second: number,
+  withZeroHourString?: Boolean
+) {
   let sec_num = parseInt(second + '', 10)
   let hours = Math.floor(sec_num / 3600)
   let minutes = Math.floor((sec_num - hours * 3600) / 60)
   let seconds = sec_num - hours * 3600 - minutes * 60
-  if (hours < 10 && hours > 0) {
+  if ((hours < 10 && hours > 0) || withZeroHourString) {
     hours = '0' + hours
   }
   if (minutes < 10) {
@@ -13,5 +16,7 @@ export default function secondFormat(second: number) {
   if (seconds < 10) {
     seconds = '0' + seconds
   }
-  return `${hours > 0 ? hours + ':' : ''}${minutes}:${seconds}`
+  return `${
+    hours > 0 || withZeroHourString ? hours + ':' : ''
+  }${minutes}:${seconds}`
 }

@@ -2,7 +2,7 @@ import S2TubePlayer from './S2TubePlayer'
 
 const player = new S2TubePlayer({
   el: '#player',
-  autoPlay: true,
+  autoPlay: false,
   sources: [
     {
       type: 'video/mp4',
@@ -42,7 +42,7 @@ const player = new S2TubePlayer({
     {
       type: 'video/mp4',
       src: '/mov_bbb.mp4',
-      showOn: [2, 4, 6],
+      showOn: ['00:15', 20],
       title: 'Related Commercials'
     }
   ]

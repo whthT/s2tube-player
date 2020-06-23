@@ -2,6 +2,7 @@ import S2TubePlayer from '../S2TubePlayer/index'
 import styles from '../styles/main.scss'
 import strToDom from '../lib/strToDom'
 import CommercialsPlayer from '../parts/CommercialsPlayer/index.pug'
+import secondFormat from '../lib/SecondFormat'
 export enum CommercialsShowTypes {
   START = 0,
   END = 100,
@@ -11,10 +12,9 @@ export enum CommercialsShowTypes {
 export interface ICommercials {
   type: string
   src: string
-  showOn: CommercialsShowTypes | CommercialsShowTypes[] | number
+  showOn: CommercialsShowTypes | CommercialsShowTypes[] | number | string
   applySkipIn?: number
   title?: string
-  description?: string
   autoSkip?: Boolean
   hideSkipButton?: Boolean
 }
@@ -32,10 +32,9 @@ export default class Commercials implements IImplements {
 
   public type: string
   public src: string
-  public showOn: CommercialsShowTypes | CommercialsShowTypes[] | number
+  public showOn: CommercialsShowTypes | CommercialsShowTypes[] | number | string
   public applySkipIn: number
   public title: string
-  public description: string
   public parent: S2TubePlayer
   public autoSkip: Boolean
   public hideSkipButton: Boolean
@@ -43,11 +42,13 @@ export default class Commercials implements IImplements {
   public commercialsVideoUniqueID: string
   private videoEl: any = null
   private skipButtonEl: HTMLButtonElement
+  public progressbarPositionPercentage: number
 
   protected skipInTime: number
   public player: S2TubePlayer
   constructor(commercials: ICommercials, parent: S2TubePlayer) {
     this._commercials = commercials
+    this.parent = parent
 
     this.type = commercials.type
     this.src = commercials.src
@@ -55,11 +56,8 @@ export default class Commercials implements IImplements {
     this.applySkipIn = commercials.applySkipIn
     this.skipInTime = commercials.applySkipIn
     this.title = commercials.title
-    this.description = commercials.description
-    this.autoSkip = commercials.autoSkip
-    this.hideSkipButton = commercials.hideSkipButton
-
-    this.parent = parent
+    this.autoSkip = commercials.autoSkip || false
+    this.hideSkipButton = commercials.hideSkipButton || false
 
     this.commercialsVideoUniqueID = `s2tp_comms_${Math.ceil(
       Math.random() * 1000
@@ -83,7 +81,34 @@ export default class Commercials implements IImplements {
     )
 
     this.videoEl = commercialsPlayerDOM.querySelector('video')
-    this.skipButtonEl = commercialsPlayerDOM.querySelector('button')
+
+    if (!this.hideSkipButton) {
+      this.skipButtonEl = commercialsPlayerDOM.querySelector('button')
+    }
+  }
+
+  getProgressbarPositionPercentage() {
+    if (typeof this.showOn === 'string') {
+      const totalVideoDuration = new Date(
+        `01-01-2000 ${secondFormat(this.parent.el.duration, true)}`
+      )
+      const commercialsShowOnDuration = new Date(
+        `01-01-2000 ${this.showOn.split(':').length <= 2 ? '00:' : ''}${
+          this.showOn
+        }`
+      )
+
+      const leftingDuration =
+        // @ts-ignore
+        (totalVideoDuration - commercialsShowOnDuration) / 1000
+
+      return (
+        ((this.parent.el.duration - leftingDuration) * 100) /
+        this.parent.el.duration
+      )
+    } else {
+      return Number(this.showOn)
+    }
   }
 
   show() {
@@ -105,7 +130,9 @@ export default class Commercials implements IImplements {
     })
     this.parent.container.classList.add(styles.showingCommercials)
     this.player.el.classList.remove(styles.hidden)
-    this.player.controlsElement.appendChild(this.skipButtonEl)
+    if (!this.hideSkipButton) {
+      this.player.controlsElement.appendChild(this.skipButtonEl)
+    }
 
     this.player.on('tick', this.tick.bind(this))
     this.player.on('ended', this.skipCommercials.bind(this))
@@ -116,12 +143,14 @@ export default class Commercials implements IImplements {
 
   tick() {
     if (this.skipInTime > 0) {
-      this.skipButtonEl.innerText = `Skip In ${this.skipInTime--}`
+      if (!this.hideSkipButton) {
+        this.skipButtonEl.innerText = `Skip In ${this.skipInTime--}`
+      }
       this.isShowing = true
     } else {
       if (this.autoSkip) {
         this.skipCommercials()
-      } else {
+      } else if (!this.hideSkipButton) {
         this.skipButtonEl.onclick = this.skipCommercials.bind(this)
         this.skipButtonEl.innerText = 'Skip Adv'
       }

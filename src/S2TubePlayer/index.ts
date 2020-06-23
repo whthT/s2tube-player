@@ -57,6 +57,8 @@ class S2TubePlayer implements IImplements {
       args.commercials && args.commercials.length
         ? this.normalizeCommercials(args.commercials)
         : []
+    console.log(this.commercials)
+
     this.captions = args.captions || []
     this.download = args.download || null
     this.onInit()
@@ -69,7 +71,6 @@ class S2TubePlayer implements IImplements {
 
     this.initializeStructure()
     this.registerVideoEvents()
-    this.placeCommercialsNotifications()
   }
   normalizeCommercials(commercials: ICommercials[]) {
     const _commercials = []
@@ -97,6 +98,7 @@ class S2TubePlayer implements IImplements {
         )
     )
   }
+
   createElement(tag: string, text: string | any = null, props: any = {}): any {
     const element = document.createElement(tag)
     if (text) {
@@ -279,11 +281,15 @@ class S2TubePlayer implements IImplements {
 
   showCommercialsIfCrossed() {
     const currentPercentage = this.getCurrentPlayingPercentage()
+    const currenctTimeString = secondFormat(this.el.currentTime)
 
     const crossedCommercial = this.commercials
       .filter(
-        (commerical) =>
-          commerical.showOn <= currentPercentage && !commerical.isEnded
+        (commercials) =>
+          !commercials.isEnded &&
+          (typeof commercials.showOn === 'string'
+            ? commercials.showOn == currenctTimeString
+            : commercials.showOn <= currentPercentage)
       )
       .slice()
       .pop()
@@ -389,6 +395,8 @@ class S2TubePlayer implements IImplements {
           console.log('INTERACT WITH PLAY')
         })
     }
+    this.hideControlsIfMouseNotMoving()
+    this.placeCommercialsNotifications()
     // @ts-ignore
     this.totalTimeEl.innerText = secondFormat(this.el.duration)
 
@@ -534,17 +542,21 @@ class S2TubePlayer implements IImplements {
   }
 
   onVideoMouseMove() {
+    this.hideControlsIfMouseNotMoving()
+  }
+
+  hideControlsIfMouseNotMoving() {
     if (this.hideControlsTimeout) {
       clearTimeout(this.hideControlsTimeout)
     }
     if (this.container.classList.contains(styles.hideControls)) {
       this.container.classList.remove(styles.hideControls)
     }
-    // this.hideControlsTimeout = setTimeout(() => {
-    //   if (!this.isConfigsMenuOpened) {
-    //     this.container.classList.add(styles.hideControls)
-    //   }
-    // }, 500)
+    this.hideControlsTimeout = setTimeout(() => {
+      if (!this.isConfigsMenuOpened) {
+        this.container.classList.add(styles.hideControls)
+      }
+    }, 500)
   }
 
   getCommercialsProgressbarNotifier(
@@ -576,7 +588,10 @@ class S2TubePlayer implements IImplements {
       .forEach((el) => el.remove())
     for (const commercials of this.commercials) {
       this.progressBarWrapper.appendChild(
-        this.getCommercialsProgressbarNotifier(commercials.showOn, commercials)
+        this.getCommercialsProgressbarNotifier(
+          commercials.getProgressbarPositionPercentage(),
+          commercials
+        )
       )
     }
   }
