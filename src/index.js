@@ -37,15 +37,15 @@ const player = new S2TubePlayer({
         'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.fr.vtt',
       lang: 'fr'
     }
+  ],
+  commercials: [
+    {
+      type: 'video/mp4',
+      src: '/mov_bbb.mp4',
+      showOn: ['00:02', 20],
+      title: 'Related Commercials'
+    }
   ]
-  // commercials: [
-  //   {
-  //     type: 'video/mp4',
-  //     src: '/mov_bbb.mp4',
-  //     showOn: ['00:02', 20],
-  //     title: 'Related Commercials'
-  //   }
-  // ]
 })
 
 console.log(player)
