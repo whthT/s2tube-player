@@ -275,6 +275,9 @@ Becomes to
 
 - Write Tests
 - Add Keyboard Shortcuts
+- Refactoring
+- Auto detect source
+- Visual improvements
 
 ## License
 
