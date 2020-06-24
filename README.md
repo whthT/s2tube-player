@@ -278,6 +278,7 @@ Becomes to
 - Refactoring
 - Auto detect source
 - Visual improvements
+- On Error Handler
 
 ## License
 
